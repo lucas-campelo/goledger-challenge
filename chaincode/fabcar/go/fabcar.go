@@ -42,12 +42,13 @@ import (
 type SmartContract struct {
 }
 
-// Define the car structure, with 4 properties.  Structure tags are used by encoding/json library
+// Define the car structure, with 4 (now 5) properties.  Structure tags are used by encoding/json library
 type Car struct {
 	Make   string `json:"make"`
 	Model  string `json:"model"`
 	Colour string `json:"colour"`
 	Owner  string `json:"owner"`
+	Year   string `json:"year"`
 }
 
 /*
@@ -93,17 +94,18 @@ func (s *SmartContract) queryCar(APIstub shim.ChaincodeStubInterface, args []str
 }
 
 func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Response {
+	noYear := "Unknown"
 	cars := []Car{
-		Car{Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko"},
-		Car{Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad"},
-		Car{Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo"},
-		Car{Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max"},
-		Car{Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana"},
-		Car{Make: "Peugeot", Model: "205", Colour: "purple", Owner: "Michel"},
-		Car{Make: "Chery", Model: "S22L", Colour: "white", Owner: "Aarav"},
-		Car{Make: "Fiat", Model: "Punto", Colour: "violet", Owner: "Pari"},
-		Car{Make: "Tata", Model: "Nano", Colour: "indigo", Owner: "Valeria"},
-		Car{Make: "Holden", Model: "Barina", Colour: "brown", Owner: "Shotaro"},
+		Car{Make: "Toyota", Model: "Prius", Colour: "blue", Owner: "Tomoko", Year: noYear},
+		Car{Make: "Ford", Model: "Mustang", Colour: "red", Owner: "Brad", Year: noYear},
+		Car{Make: "Hyundai", Model: "Tucson", Colour: "green", Owner: "Jin Soo", Year: noYear},
+		Car{Make: "Volkswagen", Model: "Passat", Colour: "yellow", Owner: "Max", Year: noYear},
+		Car{Make: "Tesla", Model: "S", Colour: "black", Owner: "Adriana", Year: noYear},
+		Car{Make: "Peugeot", Model: "205", Colour: "purple", Owner: "Michel", Year: noYear},
+		Car{Make: "Chery", Model: "S22L", Colour: "white", Owner: "Aarav", Year: noYear},
+		Car{Make: "Fiat", Model: "Punto", Colour: "violet", Owner: "Pari", Year: noYear},
+		Car{Make: "Tata", Model: "Nano", Colour: "indigo", Owner: "Valeria", Year: noYear},
+		Car{Make: "Holden", Model: "Barina", Colour: "brown", Owner: "Shotaro", Year: noYear},
 	}
 
 	i := 0
@@ -120,11 +122,25 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) sc.Respo
 
 func (s *SmartContract) createCar(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	if len(args) != 5 {
-		return shim.Error("Incorrect number of arguments. Expecting 5")
+	if len(args) < 5 || len(args) > 6 {
+		return shim.Error("Incorrect number of arguments. Expecting 5 or 6")
 	}
 
-	var car = Car{Make: args[1], Model: args[2], Colour: args[3], Owner: args[4]}
+	var car Car
+
+	if len(args) == 5 {
+		car.Make = args[1]
+		car.Model = args[2]
+		car.Colour = args[3]
+		car.Owner = args[4]
+		car.Year = "Unknown"
+	} else {
+		car.Make = args[1]
+		car.Model = args[2]
+		car.Colour = args[3]
+		car.Owner = args[4]
+		car.Year = args[5]
+	}
 
 	carAsBytes, _ := json.Marshal(car)
 	APIstub.PutState(args[0], carAsBytes)
